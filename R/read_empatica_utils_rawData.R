@@ -16,8 +16,8 @@
       }
 
       if (any(
-        length(d["timestampStart"]) != 1,
-        length(d["samplingFrequency"]) != 1
+        length(d[[x]][["timestampStart"]]) != 1,
+        length(d[[x]][["samplingFrequency"]]) != 1
       )) {
         next
       }
@@ -26,7 +26,10 @@
 
       d[[x]] %<>% remove_frame_variable("samplingFrequency")
 
-      start <- d[[x]][["timestampStart"]]
+      start <- empatica_time(
+        d[[x]][["timestampStart"]],
+        tz
+      )
 
       d[[x]] %<>% remove_frame_variable("timestampStart")
 
@@ -51,16 +54,17 @@
         next
       }
 
+      if (setequal(names(d[[x]]), "values")) {
+        names(d[[x]]) <- x
+      }
+
       d[[x]] %<>%
         dplyr::mutate(
           timestamp =
             {1:dplyr::n()} %>%
             {. - 1} %>%
-            {increment * 1} %>%
-            {start + .} %>%
-            {. * 10^-6} %>%
-            {. + tz} %>%
-            as.POSIXct(tz = "UTC", origin = "1970-01-01")
+            {increment * .} %>%
+            {start + .}
         )  %>%
         dplyr::relocate(timestamp) %>%
         merge(info, .)
@@ -91,18 +95,82 @@
 
     if (!"accelerometer" %in% names(d)) return(d)
 
+    if (length(d$accelerometer) == 0) return(d[names(d) != "accelerometer"])
+
     if (!"imu_params" %in% names(attributes(d$accelerometer))) {
       warning(
-        "No IMU parameters found for accelerometer data --",
-        " Returning unscaled values", call. = FALSE
+        "Returning accelerometer dataframe as-is",
+        " (no IMU parameters found)",
+        call. = FALSE
       )
       return(d)
     }
 
-    ## APPLY SCALING
-    attr(d$accelerometer, "imu_params")
+    if (!all(.accel_names %in% names(d$accelerometer))) {
+      warning(
+        "Returning accelerometer dataframe as-is",
+        " (does not contain columns called 'x', 'y', and 'z')",
+        call. = FALSE
+      )
+      return(d)
+    }
 
-    ## RETURN
+    scale_factor <-
+      attr(d$accelerometer, "imu_params") %T>%
+      {stopifnot(
+        setequal(names(.), .param_names),
+        sign(.[.param_names]) == c(-1, 1, -1, 1)
+      )} %>%
+      {c(
+        negative = .$digitalMin / .$physicalMin,
+        positive = .$digitalMax / .$physicalMax
+      )} %T>%
+      {stopifnot(dplyr::n_distinct(.) == 1)} %>%
+      unique(.)
+
+    d$accelerometer %<>% dplyr::mutate(
+      dplyr::across(
+        dplyr::all_of(.accel_names),
+        ~ .x / scale_factor
+      )
+    )
+
+    d
+
+  }
+
+
+  format_tags <- function(d) {
+
+    if (!"tags" %in% names(d)) return(d)
+
+    if (length(d$tags) == 0) return(d[names(d) != "tags"])
+
+    stopifnot(is.list(d$tags))
+
+    if ( all(sapply(d$tags, length) == 0) ) return(d[names(d) != "tags"])
+
+    d
+
+  }
+
+
+  format_peaks <- function(d, info) {
+
+    if (!"systolicPeaks" %in% names(d)) return(d)
+
+    if (length(d$systolicPeaks) == 0) return(d[names(d) != "systolicPeaks"])
+
+    stopifnot(
+      setequal(names(d$systolicPeaks), "peaksTimeNanos")
+    )
+
+    d$systolicPeaks %<>% {empatica_time(
+      .$peaksTimeNanos,
+      attr(info, "timezone"),
+      e = 9
+    )}
+
     d
 
   }

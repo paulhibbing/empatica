@@ -13,5 +13,6 @@ Imports:
     dplyr,
     jsonlite,
     magrittr,
+    PAutilities,
     purrr
 RoxygenNote: 7.2.3

@@ -4,10 +4,12 @@
 \alias{read_empatica_avro}
 \title{Read an Empatica raw data file}
 \usage{
-read_empatica_avro(f)
+read_empatica_avro(f, verbose = FALSE)
 }
 \arguments{
 \item{f}{character. Path to the file}
+
+\item{verbose}{logical. Print updates to console?}
 }
 \value{
 a list of formatted data elements
