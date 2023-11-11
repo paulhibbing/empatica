@@ -1,0 +1,17 @@
+Package: empatica
+Type: Package
+Title: Handle Data from Empatica Monitors
+Version: 0.1.0
+Author: Paul R. Hibbing
+Maintainer: Paul R. Hibbing <paulhibbing@gmail.com>
+Description: Handles tasks such as file reading, formatting,
+    and basic manipulations.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    jsonlite,
+    magrittr,
+    purrr
+RoxygenNote: 7.2.3
