@@ -22,7 +22,8 @@
         next
       }
 
-      increment <- 1/d[[x]][["samplingFrequency"]]
+      samp_freq <- d[[x]][["samplingFrequency"]]
+      increment <- 1/samp_freq
 
       d[[x]] %<>% remove_frame_variable("samplingFrequency")
 
@@ -70,7 +71,12 @@
         merge(info, .)
 
       if (imu_exists) {
-        d[[x]] %<>% structure(., imu_params = imu)
+        d[[x]] %<>% structure(
+          .,
+          imu_params = imu,
+          start = start,
+          samp_freq = samp_freq
+        )
       }
 
     }
