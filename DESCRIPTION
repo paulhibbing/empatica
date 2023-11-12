@@ -12,7 +12,9 @@ LazyData: true
 Imports: 
     dplyr,
     jsonlite,
+    lubridate,
     magrittr,
     PAutilities,
-    purrr
+    purrr,
+    stats
 RoxygenNote: 7.2.3
