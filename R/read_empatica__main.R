@@ -15,9 +15,13 @@ read_empatica_avro <- function(f, verbose = FALSE) {
 
   ## Initial file checks
 
-    if (!grepl("avro$", f)) stop("`f` must be a file with avro extension")
+    if (!grepl("avro$", f)) stop(
+      basename(f), " is not an avro file"
+    )
 
-    stopifnot(file.exists(f))
+    if (!file.exists(f)) stop(
+      basename(f), " does not exist"
+    )
 
     timer <- PAutilities::manage_procedure(
       "Start", "\nReading", basename(f), verbose = verbose

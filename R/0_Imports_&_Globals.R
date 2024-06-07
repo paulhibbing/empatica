@@ -1,5 +1,5 @@
 if(getRversion() >= "2.15.1")  utils::globalVariables(c(
-  ".", "timestamp"
+  ".", "f", "file_number", "timestamp"
 ))
 
 .param_names <- c("physicalMin", "physicalMax", "digitalMin", "digitalMax")
